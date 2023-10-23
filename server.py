@@ -1,54 +1,53 @@
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from PIL import Image
 import io
+import os
 import base64
 
-def process_image(image_data, option):
+def process_image(image_data, option, angle=None, width=None, height=None):
     try:
-        # Decodificar os dados da imagem
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
 
-        print(f"Recebida operação {option} para processar a imagem.")
+        print(f"\nOperation received: {option} to manipulate the image.")
 
-        if option == '1':
-            # Transformar a imagem em preto e branco
+        if option == '2':
             image = image.convert('L')
-        elif option == '2':
-            # Rodar a imagem em 90 graus
-            image = image.rotate(90)
         elif option == '3':
-            # Mudar as dimensões da imagem para 200x200 pixels
-            image = image.resize((200, 200))
+            if angle is not None:
+                image = image.rotate(angle)
+        elif option == '4':
+            if width is not None and height is not None:
+                image = image.resize((width, height))
 
-        # Salvar a imagem processada
         with io.BytesIO() as output:
             image.save(output, format="JPEG")
             processed_image_data = base64.b64encode(output.getvalue()).decode('utf-8')
 
-        print(f"Operação {option} concluída. Enviando a imagem processada de volta para o cliente.")
+        print(f"\nOperation {option} concluded. Sending the image to the client.")
 
         return processed_image_data
     except Exception as e:
-        print(f"Erro durante o processamento da imagem: {e}")
-        return ""  # Retorna uma string vazia em caso de erro
+        print(f"Error during image manipulation: {e}")
+        return ""
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 def run_server():
-    host = 'localhost'  # Altere para o endereço desejado
-    port = 8000  # Altere para a porta desejada
+    os.system("cls")
+    host = 'localhost'
+    port = 8000
 
     server = SimpleXMLRPCServer((host, port), requestHandler=RequestHandler)
 
     server.register_function(process_image, 'process_image')
 
-    print(f"Server awaiting connections {host}:{port}...")
+    print(f"\nRPC Server has been initialized & awaiting connections {host}:{port}...")
     server.serve_forever()
 
 if __name__ == "__main__":
     try:
         run_server()
     except KeyboardInterrupt:
-        print("RPC server has been shut down.")
+        print("\nRPC server has been shut down.")
