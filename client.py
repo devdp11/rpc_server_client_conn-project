@@ -7,7 +7,7 @@ from tkinter import filedialog
 server_url = "http://localhost:8000"
 server = xmlrpc.client.ServerProxy(server_url)
 
-def send_image_and_option(image_path, option, angle=None, width=None, height=None):
+def send_image_and_option(image_path, option, angle=None):
     try:
         with open(image_path, 'rb') as image_file:
             image_data = base64.b64encode(image_file.read()).decode('utf-8')
@@ -15,9 +15,6 @@ def send_image_and_option(image_path, option, angle=None, width=None, height=Non
         if option == '2' and angle is not None:
             # If the option is '2' (rotate), include the angle in the request
             processed_image_data = server.process_image(image_data, option, angle)
-        elif option == '3' and width is not None and height is not None:
-            # If the option is '3' (resize), include width and height in the request
-            processed_image_data = server.process_image(image_data, option, width, height)
         else:
             processed_image_data = server.process_image(image_data, option)
 
@@ -41,48 +38,44 @@ if __name__ == "__main__":
 
     while True:
         if image_path is None:
-            print("\nNo image selected.")
+            print("No image selected.")
             image_path = select_image()
 
-        print("\n1 - Select another image")
-        print("2 - Gray-White Image")
-        print("3 - Rotate Image")
-        print("4 - Resize Image")
-        print("0 - Disconnect")
+        print("\n0 - Select another image")
+        print("1 - Gray-White Image")
+        print("2 - Rotate Image")
+        print("3 - Resize Image")
+        print("4 - Disconnect")
+
 
         option = input("Choose an option: ").strip()
+        os.system("cls")
 
-        if option == '1':
+        if option == '0':
             image_path = select_image()
             continue
-        elif option == '2' and image_path:
-            os.system("cls")
+        elif option == '1' and image_path:
             send_image_and_option(image_path, option)
-        elif option == '3':
-            os.system("cls")
+
+        elif option == '2':
             angle = input("\nEnter the angle for rotation (in degrees): ")
+            os.system("cls")
             if not angle:
                 print("\nNo angle provided. Skipping rotation.")
             else:
-                os.system("cls")
                 send_image_and_option(image_path, option, int(angle))
-        elif option == '4' and image_path:
-            os.system("cls")
-            width = input("\nEnter the width: ")
-            height = input("Enter the height: ")
-            if not width or not height:
-                print("\nInvalid dimensions. Skipping resizing.")
-            else:
-                os.system("cls")
-                send_image_and_option(image_path, option, None, int(width), int(height))
-        elif option == '0':
-            os.system("cls")
-            leave = input("\nAre you sure you want to disconnect the server? (y/n):").lower()
+
+        elif option == '3' and image_path:
+            send_image_and_option(image_path, option)
+        
+        elif option == '4':
+            leave = input("\nAre you sure you want to disconnect the server (y/n):").lower()
             if leave == 'y':
                 os.system("cls")
-                print("\nLeaving the program...")
+                print("\nLeaving the server...\n")
                 break
             else:
                 os.system("cls")
+
         else:
             print("\nInvalid Option, Try Again.")

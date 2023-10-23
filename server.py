@@ -4,21 +4,20 @@ import io
 import os
 import base64
 
-def process_image(image_data, option, angle=None, width=None, height=None):
+def process_image(image_data, option, angle=None):
     try:
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
 
         print(f"\nOperation received: {option} to manipulate the image.")
 
-        if option == '2':
+        if option == '1':
             image = image.convert('L')
-        elif option == '3':
+        elif option == '2':
             if angle is not None:
                 image = image.rotate(angle)
-        elif option == '4':
-            if width is not None and height is not None:
-                image = image.resize((width, height))
+        elif option == '3':
+            image = image.resize((200, 200))
 
         with io.BytesIO() as output:
             image.save(output, format="JPEG")
@@ -28,7 +27,7 @@ def process_image(image_data, option, angle=None, width=None, height=None):
 
         return processed_image_data
     except Exception as e:
-        print(f"Error during image manipulation: {e}")
+        print(f"\nError during image manipulation: {e}")
         return ""
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
