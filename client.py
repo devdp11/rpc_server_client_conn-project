@@ -2,9 +2,16 @@ import xmlrpc.client
 import os
 import base64
 
+# URL do servidor RPC (substitua pelo endereço do seu servidor)
+server_url = "http://localhost:8000"
+
+# Criar uma instância do servidor RPC
+server = xmlrpc.client.ServerProxy(server_url)
+
 def send_image_and_option(image_path, option):
     try:
-        # ...
+        with open(image_path, 'rb') as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
 
         # Chamar a função do servidor RPC
         processed_image_data = server.process_image(image_data, option)
@@ -18,8 +25,6 @@ def send_image_and_option(image_path, option):
             print("Erro durante o processamento da imagem no servidor.")
     except Exception as e:
         print(f"Erro: {e}")
-
-
 
 if __name__ == "__main__":
     image_path = input("Insira o caminho da imagem: ")

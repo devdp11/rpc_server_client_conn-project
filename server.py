@@ -6,7 +6,7 @@ import base64
 def process_image(image_data, option):
     try:
         # Decodificar os dados da imagem
-        image_bytes = base64.b64decode(image_data.data)
+        image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
 
         print(f"Recebida operação {option} para processar a imagem.")
@@ -32,8 +32,6 @@ def process_image(image_data, option):
     except Exception as e:
         print(f"Erro durante o processamento da imagem: {e}")
         return ""  # Retorna uma string vazia em caso de erro
-
-
 
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
