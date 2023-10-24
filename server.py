@@ -4,12 +4,13 @@ import io
 import os
 import base64
 
-def process_image(image_data, option, angle=None):
+def process_image(image_data, option, angle=None, width=None, height=None):
     try:
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
 
         print(f"\nOperation received: {option} to manipulate the image.")
+        print(width + height)
 
         if option == '1':
             image = image.convert('L')
@@ -17,7 +18,10 @@ def process_image(image_data, option, angle=None):
             if angle is not None:
                 image = image.rotate(angle)
         elif option == '3':
-            image = image.resize((200, 200))
+            if width is not None and height is not None:
+                new_width = int(image.width * width / 100)
+                new_height = int(image.height * height / 100)
+                image = image.resize((new_width, new_height))
 
         with io.BytesIO() as output:
             image.save(output, format="JPEG")
@@ -38,7 +42,7 @@ def run_server():
     host = 'localhost'
     port = 8000
 
-    server = SimpleXMLRPCServer((host, port), requestHandler=RequestHandler)
+    server = SimpleXMLRPCServer((host, port), requestHandler=RequestHandler, allow_none=True)
 
     server.register_function(process_image, 'process_image')
 
