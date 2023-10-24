@@ -1,34 +1,58 @@
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from PIL import Image
 import io
-import os
 import base64
+from PIL import ImageFilter
 
-def process_image(image_data, option, angle=None, width=None, height=None):
+def convert_to_grayscale(encoded_image):
     try:
-        image_bytes = base64.b64decode(image_data)
+        image_bytes = base64.b64decode(encoded_image)
         image = Image.open(io.BytesIO(image_bytes))
-
-        print(f"\nOperation received: {option} to manipulate the image.")
-        print(width + height)
-
-        if option == '1':
-            image = image.convert('L')
-        elif option == '2':
-            if angle is not None:
-                image = image.rotate(angle)
-        elif option == '3':
-            if width is not None and height is not None:
-                new_width = int(image.width * width / 100)
-                new_height = int(image.height * height / 100)
-                image = image.resize((new_width, new_height))
-
+        gray_image = image.convert('L')
         with io.BytesIO() as output:
-            image.save(output, format="JPEG")
+            gray_image.save(output, format="JPEG")
             processed_image_data = base64.b64encode(output.getvalue()).decode('utf-8')
+        return processed_image_data
+    except Exception as e:
+        print(f"\nError during image manipulation: {e}")
+        return ""
 
-        print(f"\nOperation {option} concluded. Sending the image to the client.")
+def resize_image(encoded_image, width, height):
+    try:
+        image_bytes = base64.b64decode(encoded_image)
+        image = Image.open(io.BytesIO(image_bytes))
+        new_width = int(image.width * (width / 100))
+        new_height = int(image.height * (height / 100))
+        resized_image = image.resize((new_width, new_height))
+        with io.BytesIO() as output:
+            resized_image.save(output, format="JPEG")
+            processed_image_data = base64.b64encode(output.getvalue()).decode('utf-8')
+        return processed_image_data
+    except Exception as e:
+        print(f"\nError during image manipulation: {e}")
+        return ""
 
+def rotate_image(encoded_image, angle):
+    try:
+        image_bytes = base64.b64decode(encoded_image)
+        image = Image.open(io.BytesIO(image_bytes))
+        rotated_image = image.rotate(angle)
+        with io.BytesIO() as output:
+            rotated_image.save(output, format="JPEG")
+            processed_image_data = base64.b64encode(output.getvalue()).decode('utf-8')
+        return processed_image_data
+    except Exception as e:
+        print(f"\nError during image manipulation: {e}")
+        return ""
+
+def apply_blur(encoded_image):
+    try:
+        image_bytes = base64.b64decode(encoded_image)
+        image = Image.open(io.BytesIO(image_bytes))
+        blurred_image = image.filter(ImageFilter.GaussianBlur(5))
+        with io.BytesIO() as output:
+            blurred_image.save(output, format="JPEG")
+            processed_image_data = base64.b64encode(output.getvalue()).decode('utf-8')
         return processed_image_data
     except Exception as e:
         print(f"\nError during image manipulation: {e}")
@@ -38,13 +62,15 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 def run_server():
-    os.system("cls")
-    host = 'localhost'
+    host = '0.0.0.0'
     port = 8000
 
     server = SimpleXMLRPCServer((host, port), requestHandler=RequestHandler, allow_none=True)
 
-    server.register_function(process_image, 'process_image')
+    server.register_function(convert_to_grayscale, 'convert_to_grayscale')
+    server.register_function(resize_image, 'resize_image')
+    server.register_function(rotate_image, 'rotate_image')
+    server.register_function(apply_blur, 'apply_blur')
 
     print(f"\nRPC Server has been initialized & awaiting connections {host}:{port}...")
     server.serve_forever()
