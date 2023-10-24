@@ -13,21 +13,25 @@ def send_image_and_option(image_path, option, angle, width, height):
             image_data = base64.b64encode(image_file.read()).decode('utf-8')
 
         if option == '1':
-            processed_image_data = server.convert_to_grayscale(image_data)
+            processed_image_data = server.convert_image(image_data)
+            image_operation = 'grayscale'
         elif option == '2':
             if angle is not None:
                 processed_image_data = server.rotate_image(image_data, angle)
+                image_operation = 'rotate'
         elif option == '3':
             if width is not None and height is not None:
                 processed_image_data = server.resize_image(image_data, width, height)
+                image_operation = 'resize'
         elif option == '4':
-            processed_image_data = server.apply_blur(image_data)
+            processed_image_data = server.blur_image(image_data)
+            image_operation = 'blur'
 
         if processed_image_data is not None:
-            with open('processed_image.jpg', 'wb') as processed_image_file:
+            with open(f'{os.path.splitext(image_path)[0]}_{image_operation}.jpg', 'wb') as processed_image_file:
                 processed_image_file.write(base64.b64decode(processed_image_data))
 
-            print("\nImage has been successfully manipulated & saved as 'processed_image.jpg'.")
+            print(f"\nImage has been successfully manipulated & saved as '{os.path.splitext(os.path.basename(image_path))[0]}_{image_operation}.jpg'.")
     except Exception as e:
         print(f"Error {e}")
 
@@ -41,11 +45,10 @@ def select_image():
 if __name__ == "__main__":
     image_path = None
 
-    while True:
-        if image_path is None:
-            print("No image selected.")
-            image_path = select_image()
+    if image_path is None:
+        image_path = select_image()
 
+    while True:
         print("\n0 - Select another image")
         print("1 - Convert to Grayscale")
         print("2 - Rotate Image")
@@ -72,8 +75,8 @@ if __name__ == "__main__":
                 send_image_and_option(image_path, option, int(angle), None, None)
 
         elif option == '3' and image_path:
-            width = float(input("\nEnter the width resize in pxs (e.g: 140): "))
-            height = float(input("\nEnter the height resize in pxs (e.g: 140): "))
+            width = int(input("\nEnter the width resize in pxs (e.g: 140): "))
+            height = int(input("\nEnter the height resize in pxs (e.g: 140): "))
             os.system("cls")
             if width and height:
                 send_image_and_option(image_path, option, None, width, height)
@@ -92,4 +95,4 @@ if __name__ == "__main__":
             else:
                 os.system("cls")
         else:
-            print("\nInvalid Option, Try Again.")
+            print("\nSelect Image or a valid option.")
