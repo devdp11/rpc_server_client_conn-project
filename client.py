@@ -29,10 +29,13 @@ def send_image_and_option(image_path, option, angle, width, height):
             image_operation = 'blur'
 
         if processed_image_data is not None:
-            with open(f'{os.path.splitext(image_path)[0]}_{image_operation}.jpg', 'wb') as processed_image_file:
+            image_extension = image_path.split('.')[-1]
+            output_filename = f'{os.path.splitext(image_path)[0]}_{image_operation}.{image_extension}'
+
+            with open(output_filename, 'wb') as processed_image_file:
                 processed_image_file.write(base64.b64decode(processed_image_data))
 
-            print(f"\nImage has been successfully manipulated & saved as '{os.path.splitext(os.path.basename(image_path))[0]}_{image_operation}.jpg'.")
+            print(f"\nImage has been successfully manipulated & saved as '{output_filename}'.")
     except Exception as e:
         print(f"Error {e}")
 
@@ -40,7 +43,7 @@ def select_image():
     os.system("cls")
     root = tk.Tk()
     root.withdraw()
-    file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.gif")])
+    file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png")])
     return file_path if file_path else None
 
 if __name__ == "__main__":
